@@ -1,16 +1,27 @@
-# My App
+# jhabit
 
-A full-stack TypeScript micro app with built-in auth, API keys, remote MCP endpoint with OAuth 2.1, and Docker deployment.
+A habit and quit tracker. Track things you want to do (habits) and things you want to stop doing (quits). Built on a full-stack TypeScript micro app template with auth, API keys, MCP for AI agents, and Docker deployment.
 
-## Philosophy
+## What It Does
 
-This is a template for building small, focused apps — each one does one thing well. Every app ships with the same plumbing: auth, API keys, remote MCP for AI agents, Docker deployment, CI/CD. You just add your domain logic.
+- **Habits** — Track daily habits (e.g., Meditate, Exercise). Log completions, see streaks, view calendar history.
+- **Quits** — Track things you're quitting (e.g., Smoking). Live abstinence timer, slip-up logging, clean streak tracking.
 
-The idea: a constellation of micro apps for different parts of life, all accessible to AI agents via MCP, all deployable the same way.
+Both types share the same data model — a tracker with entries. For habits, entries mean "I did it". For quits, entries mean "I slipped up".
+
+## Features
+
+- Tab-based home screen (Habits / Quits) with grid and list views
+- Habit cards with day-of-week indicators, streaks, and "Did it!" button
+- Quit cards with live ticking abstinence timer, progress ring, and "Slipped up" button
+- Full calendar detail view per tracker (click any day to see/add/delete entries)
+- Statistics panel: completion rate, streaks, averages, clean days %, and more
+- Three ways to access: Web UI, API keys, MCP (for AI agents like Claude)
+- Single-container Docker deployment
 
 ## Architecture
 
-Single-container app. Express serves both the API and the frontend static files. No separate web server needed.
+Single-container app. Express serves both the API and the React SPA.
 
 ```
 ┌──────────────────────────────────────────────┐
@@ -19,77 +30,49 @@ Single-container app. Express serves both the API and the frontend static files.
 │  ┌─────────────────────────────────────────┐  │
 │  │            Express Server               │  │
 │  │                                         │  │
-│  │  /api/*          → REST endpoints       │  │
-│  │  /api/auth/*     → Login, register,     │  │
-│  │                    API keys             │  │
-│  │  /mcp            → MCP (Streamable HTTP)│  │
-│  │  /.well-known/*  → OAuth 2.1 discovery  │  │
-│  │  /*              → React SPA (static)   │  │
+│  │  /api/trackers/*  → Tracker CRUD        │  │
+│  │  /api/entries/*   → Entry CRUD          │  │
+│  │  /api/auth/*      → Login, register,    │  │
+│  │                     API keys            │  │
+│  │  /mcp             → MCP (Streamable HTTP│  │
+│  │  /.well-known/*   → OAuth 2.1 discovery │  │
+│  │  /*               → React SPA (static)  │  │
 │  │                                         │  │
 │  │  ┌───────────┐                          │  │
-│  │  │  SQLite   │  ./data/app.db           │  │
+│  │  │  SQLite   │  ./data/jhabit.db        │  │
 │  │  └───────────┘                          │  │
 │  └─────────────────────────────────────────┘  │
 └──────────────────────────────────────────────┘
 ```
 
-Three ways to talk to the app:
-1. **Web UI** — React SPA, session-based auth
-2. **API keys** — programmatic access, `X-API-Key` header
-3. **MCP** — AI agents connect via OAuth 2.1, use tools to interact with your data
+## Data Model
+
+```sql
+trackers (id, user_id, name, type[habit|quit], emoji, sort_order, created_at, updated_at)
+entries  (id, tracker_id, user_id, timestamp, note, created_at)
+```
 
 ## Tech Stack
 
-| Layer | Tech | Why |
-|-------|------|-----|
-| **Runtime** | Node.js 20 | LTS, TypeScript native |
-| **Backend** | Express + TypeScript | Simple, flexible, huge ecosystem |
-| **Database** | SQLite (better-sqlite3) | Zero config, single file, fast. Perfect for micro apps |
-| **Frontend** | React 18 + Vite | Fast dev, fast builds |
-| **Styling** | Tailwind CSS | Utility-first, dark mode via `class` strategy |
-| **Auth** | express-session + bcrypt | Session cookies for web, API keys for programmatic, OAuth 2.1 for MCP |
-| **MCP** | @modelcontextprotocol/sdk | Streamable HTTP transport, works with Claude mobile/web |
-| **Build** | Docker multi-stage | Frontend build → backend build → slim production image |
-| **CI/CD** | GitHub Actions → GHCR | Push to main = new image |
-
-## Project Structure
-
-```
-├── backend/
-│   └── src/
-│       ├── index.ts            # Express server, routes, middleware
-│       ├── db/database.ts      # SQLite schema + init
-│       ├── middleware/auth.ts   # Session + API key auth
-│       ├── routes/auth.ts      # Login, register, API key CRUD
-│       ├── mcp/
-│       │   ├── server.ts       # MCP route mounting
-│       │   ├── tools.ts        # Your MCP tools go here
-│       │   ├── oauth-provider.ts  # OAuth 2.1 provider
-│       │   └── auth-page.ts    # OAuth login page
-│       └── utils/response.ts   # Standard API response helpers
-├── frontend/
-│   └── src/
-│       ├── App.tsx             # Router + protected routes
-│       ├── pages/              # Your app pages
-│       ├── api/client.ts       # API client with auth
-│       ├── context/ThemeContext.tsx  # Dark mode
-│       └── components/         # Shared components
-├── Dockerfile                  # 3-stage build
-├── docker-compose.yml
-└── .github/workflows/docker.yml
-```
-
-## Auth Model
-
-- **First user to register becomes admin.** No registration page — hit `POST /api/auth/register` directly.
-- **Sessions** for the web UI (httpOnly cookies)
-- **API keys** for scripts/automation (`X-API-Key` header). Users create/manage keys via the API.
-- **OAuth 2.1** for MCP — AI agents authenticate with username/password via the OAuth flow, get scoped tokens.
-
-All three auth methods resolve to the same user. Your routes just use `requireAuth` middleware and get `req.user`.
+| Layer | Tech |
+|-------|------|
+| **Runtime** | Node.js 20 |
+| **Backend** | Express + TypeScript |
+| **Database** | SQLite (better-sqlite3) |
+| **Frontend** | React 18 + Vite + Tailwind CSS |
+| **Auth** | Sessions + API keys + OAuth 2.1 |
+| **MCP** | @modelcontextprotocol/sdk (Streamable HTTP) |
+| **Build** | Docker multi-stage |
+| **CI/CD** | GitHub Actions → GHCR |
 
 ## Quick Start
 
+Create a `.env` file:
+```bash
+SESSION_SECRET=your-secret-here
+```
+
+Run with Docker:
 ```bash
 docker-compose up -d
 ```
@@ -109,36 +92,44 @@ Visit http://localhost:3100 and log in.
 # Backend (port 3100)
 cd backend && npm install && npm run dev
 
-# Frontend (port 3000, proxies API to 3100)
+# Frontend (port 3200)
 cd frontend && npm install && npm run dev
 ```
 
-## What to Customize
+## API Endpoints
 
-1. **`APP_NAME`** env var — used in health check, MCP server name, OAuth login page, DB filename
-2. **`backend/src/db/database.ts`** — replace the `items` table with your domain schema
-3. **`backend/src/index.ts`** — replace example `/api/items` routes with your domain routes
-4. **`backend/src/mcp/tools.ts`** — replace example tools with your domain MCP tools
-5. **`frontend/src/pages/`** — build your app pages
-6. **`frontend/src/api/client.ts`** — add your domain API calls
-7. **`frontend/index.html`** — update the `<title>`
+**Trackers:**
+- `GET /api/trackers` — list trackers (optional `?type=habit|quit`)
+- `GET /api/trackers/:id` — get single tracker
+- `POST /api/trackers` — create `{ name, type, emoji? }`
+- `PUT /api/trackers/:id` — update `{ name?, emoji?, sort_order? }`
+- `DELETE /api/trackers/:id` — delete tracker + all entries
+
+**Entries:**
+- `GET /api/trackers/:id/entries` — list entries (optional `?month=YYYY-MM`)
+- `POST /api/trackers/:id/entries` — create `{ timestamp?, note? }`
+- `DELETE /api/entries/:id` — delete entry
+
+## MCP Tools
+
+AI agents (e.g., Claude) can interact via MCP:
+
+- `list_trackers(type?)` — list habits/quits
+- `create_tracker(name, type, emoji?)` — create a tracker
+- `log_entry(tracker_id, timestamp?, note?)` — log a completion or slip-up
+- `delete_entry(entry_id)` — remove an entry
+- `get_tracker_stats(tracker_id)` — streaks, completion rates, abstinence time
 
 ## Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `SESSION_SECRET` | Yes (production) | Session encryption key |
+| `SESSION_SECRET` | Yes | Session encryption key |
 | `APP_NAME` | No | App name (default: `jhabit`) |
-| `MCP_SERVER_URL` | For remote MCP | Public URL for OAuth metadata |
 | `PORT` | No | Server port (default: `3100`) |
-| `FRONTEND_URL` | No | CORS origin for dev (default: `http://localhost:3000`) |
-
-## MCP Setup
-
-1. Set `MCP_SERVER_URL` to your public URL
-2. Set up DNS + nginx reverse proxy with SSL (remember `proxy_buffering off` for SSE)
-3. Add as custom integration in Claude.ai pointing to `https://your-domain.com/mcp`
-4. Authenticate with your app username/password
+| `MCP_SERVER_URL` | For remote MCP | Public URL for OAuth metadata |
+| `COOKIE_SECURE` | No | Set to `true` when behind HTTPS |
+| `FRONTEND_URL` | No | CORS origin for dev (default: `http://localhost:3200`) |
 
 ## Deployment
 
@@ -148,5 +139,3 @@ On your server:
 ```bash
 docker-compose pull && docker-compose up -d
 ```
-
-That's it. Same pattern for every app.
