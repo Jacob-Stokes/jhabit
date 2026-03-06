@@ -130,9 +130,17 @@ cd frontend && npm install && npm run dev
 - `POST /api/trackers/:id/entries` — create `{ timestamp?, note? }`
 - `DELETE /api/entries/:id` — delete entry
 
-## MCP Tools
+## MCP Access
 
-AI agents (e.g., Claude) can interact via MCP:
+jhabit supports two MCP modes for AI agents:
+
+**Built-in Remote MCP** — The app includes an MCP endpoint at `/mcp` using Streamable HTTP transport with OAuth 2.1 authentication. Ideal for remote/cloud MCP clients. Set `MCP_SERVER_URL` to your public URL for OAuth discovery.
+
+**Standalone MCP Server** — For local MCP clients like Claude Desktop and Claude Code, use [jhabit-mcp](https://github.com/Jacob-Stokes/jhabit-mcp). It connects to your jhabit instance via API key and runs as a stdio-based MCP server.
+
+### MCP Tools
+
+Both modes expose the same 5 tools:
 
 - `list_trackers(type?)` — list habits/quits
 - `create_tracker(name, type, emoji?)` — create a tracker
@@ -155,7 +163,23 @@ AI agents (e.g., Claude) can interact via MCP:
 
 Push to `main` triggers GitHub Actions → builds Docker image → pushes to GHCR.
 
-On your server:
+On your server, update `docker-compose.yml` to use the pre-built image:
+```yaml
+services:
+  app:
+    image: ghcr.io/jacob-stokes/jhabit:latest
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3100
+      - SESSION_SECRET=${SESSION_SECRET:?Set SESSION_SECRET in .env}
+    restart: unless-stopped
+```
+
+Then pull and run:
 ```bash
 docker-compose pull && docker-compose up -d
 ```
