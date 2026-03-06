@@ -38,11 +38,12 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+    <div className="min-h-screen bg-[#6366f1] flex items-center justify-center">
       <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
         <div className="flex flex-col items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Sign In</h1>
-          <p className="text-gray-600 dark:text-gray-400">Welcome back</p>
+          <img src="/logo.svg" alt="jhabit" className="w-16 h-16 mb-4" />
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">jhabit</h1>
+          <p className="text-gray-600 dark:text-gray-400">Track your habits, break your quits</p>
         </div>
 
         {error && (

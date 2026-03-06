@@ -80,7 +80,8 @@ export default function Home() {
     <div className="min-h-screen bg-[#6366f1]">
       <div className="w-full lg:w-3/5 mx-auto">
       {/* Tab bar */}
-      <div className="flex items-center justify-center gap-2 pt-4 pb-2 px-4">
+      <div className="flex items-center gap-2 pt-4 pb-2 px-4">
+        <img src="/logo.svg" alt="jhabit" className="w-8 h-8 mr-1" />
         <button
           onClick={() => setTab('habit')}
           className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition-all ${

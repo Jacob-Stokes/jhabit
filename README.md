@@ -1,4 +1,8 @@
-# jhabit
+<p align="center">
+  <img src="frontend/public/logo.svg" alt="jhabit" width="96" />
+</p>
+
+<h1 align="center">jhabit</h1>
 
 A habit and quit tracker. Track things you want to do (habits) and things you want to stop doing (quits). Built on a full-stack TypeScript micro app template with auth, API keys, MCP for AI agents, and Docker deployment.
 
@@ -72,7 +76,23 @@ Create a `.env` file:
 SESSION_SECRET=your-secret-here
 ```
 
-Run with Docker:
+Create a `docker-compose.yml`:
+```yaml
+services:
+  app:
+    build: .
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3100
+      - SESSION_SECRET=${SESSION_SECRET:?Set SESSION_SECRET in .env}
+    restart: unless-stopped
+```
+
+Run:
 ```bash
 docker-compose up -d
 ```
