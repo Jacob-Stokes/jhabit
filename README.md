@@ -96,20 +96,20 @@ docker-compose up -d
 
 Register your account:
 ```bash
-curl -X POST http://localhost:3001/api/auth/register \
+curl -X POST http://localhost:3100/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"you","password":"your-password"}'
 ```
 
-Visit http://localhost:3001 and log in.
+Visit http://localhost:3100 and log in.
 
 ## Development
 
 ```bash
-# Backend (port 3001)
+# Backend (port 3100)
 cd backend && npm install && npm run dev
 
-# Frontend (port 3000, proxies API to 3001)
+# Frontend (port 3000, proxies API to 3100)
 cd frontend && npm install && npm run dev
 ```
 
@@ -128,9 +128,9 @@ cd frontend && npm install && npm run dev
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `SESSION_SECRET` | Yes (production) | Session encryption key |
-| `APP_NAME` | No | App name (default: `myapp`) |
+| `APP_NAME` | No | App name (default: `jhabit`) |
 | `MCP_SERVER_URL` | For remote MCP | Public URL for OAuth metadata |
-| `PORT` | No | Server port (default: `3001`) |
+| `PORT` | No | Server port (default: `3100`) |
 | `FRONTEND_URL` | No | CORS origin for dev (default: `http://localhost:3000`) |
 
 ## MCP Setup

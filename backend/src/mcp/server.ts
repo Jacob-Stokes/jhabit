@@ -12,8 +12,8 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { AppOAuthProvider, startOAuthCleanup } from './oauth-provider';
 import { createMcpServer } from './tools';
 
-const APP_NAME = process.env.APP_NAME || 'myapp';
-const MCP_SERVER_URL = process.env.MCP_SERVER_URL || 'http://localhost:3001';
+const APP_NAME = process.env.APP_NAME || 'jhabit';
+const MCP_SERVER_URL = process.env.MCP_SERVER_URL || `http://localhost:${process.env.PORT || 3100}`;
 
 const sessions = new Map<string, { transport: StreamableHTTPServerTransport; server: McpServer }>();
 

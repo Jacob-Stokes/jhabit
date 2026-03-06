@@ -44,6 +44,6 @@ COPY --from=frontend-builder /app/frontend/dist ./public
 
 RUN mkdir -p data
 
-EXPOSE 3001
+EXPOSE 3100
 
 CMD ["npm", "start"]

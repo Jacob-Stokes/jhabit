@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 
-const APP_NAME = process.env.APP_NAME || 'myapp';
+const APP_NAME = process.env.APP_NAME || 'jhabit';
 const DB_PATH = process.env.DATABASE_URL?.replace('file:', '') || `./data/${APP_NAME}.db`;
 
 export const db = new Database(DB_PATH);
@@ -80,18 +80,35 @@ CREATE INDEX IF NOT EXISTS idx_oauth_tokens_user ON oauth_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_oauth_tokens_expires ON oauth_tokens(expires_at);
 CREATE INDEX IF NOT EXISTS idx_oauth_auth_codes_expires ON oauth_auth_codes(expires_at);
 
--- ─── Example domain table (replace with your own) ───────────────
-CREATE TABLE IF NOT EXISTS items (
+-- ─── Trackers (habits and quits) ───────────────────────────────
+CREATE TABLE IF NOT EXISTS trackers (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
-  title TEXT NOT NULL,
-  description TEXT,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL CHECK(type IN ('habit', 'quit')),
+  emoji TEXT,
+  sort_order INTEGER DEFAULT 0,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now')),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_items_user ON items(user_id);
+CREATE INDEX IF NOT EXISTS idx_trackers_user ON trackers(user_id);
+
+-- Entries: for habits = completion logs, for quits = slip-up logs
+CREATE TABLE IF NOT EXISTS entries (
+  id TEXT PRIMARY KEY,
+  tracker_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  timestamp TEXT NOT NULL DEFAULT (datetime('now')),
+  note TEXT,
+  created_at TEXT DEFAULT (datetime('now')),
+  FOREIGN KEY (tracker_id) REFERENCES trackers(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_entries_tracker ON entries(tracker_id);
+CREATE INDEX IF NOT EXISTS idx_entries_timestamp ON entries(timestamp);
 `;
 
 export function initDatabase() {
@@ -111,11 +128,22 @@ export interface User {
   updated_at: string;
 }
 
-export interface Item {
+export interface Tracker {
   id: string;
   user_id: string;
-  title: string;
-  description: string | null;
+  name: string;
+  type: 'habit' | 'quit';
+  emoji: string | null;
+  sort_order: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface Entry {
+  id: string;
+  tracker_id: string;
+  user_id: string;
+  timestamp: string;
+  note: string | null;
+  created_at: string;
 }

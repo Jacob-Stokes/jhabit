@@ -1,4 +1,4 @@
-export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3100';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -62,14 +62,53 @@ export const api = {
   deleteApiKey: (id: string) =>
     apiRequest<any>(`/api/auth/api-keys/${id}`, { method: 'DELETE' }),
 
-  // ─── Your domain endpoints go here ───────────────────────
-  // Example:
-  getItems: () => apiRequest<any[]>('/api/items'),
-  createItem: (title: string, description?: string) =>
-    apiRequest<any>('/api/items', {
+  // ─── Trackers ──────────────────────────────────────────────
+  getTrackers: (type?: 'habit' | 'quit') =>
+    apiRequest<Tracker[]>(`/api/trackers${type ? `?type=${type}` : ''}`),
+  getTracker: (id: string) =>
+    apiRequest<Tracker>(`/api/trackers/${id}`),
+  createTracker: (name: string, type: 'habit' | 'quit', emoji?: string) =>
+    apiRequest<Tracker>('/api/trackers', {
       method: 'POST',
-      body: JSON.stringify({ title, description }),
+      body: JSON.stringify({ name, type, emoji }),
     }),
-  deleteItem: (id: string) =>
-    apiRequest<any>(`/api/items/${id}`, { method: 'DELETE' }),
+  updateTracker: (id: string, data: { name?: string; emoji?: string; sort_order?: number }) =>
+    apiRequest<Tracker>(`/api/trackers/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  deleteTracker: (id: string) =>
+    apiRequest<any>(`/api/trackers/${id}`, { method: 'DELETE' }),
+
+  // ─── Entries ──────────────────────────────────────────────
+  getEntries: (trackerId: string, month?: string) =>
+    apiRequest<Entry[]>(`/api/trackers/${trackerId}/entries${month ? `?month=${month}` : ''}`),
+  createEntry: (trackerId: string, timestamp?: string, note?: string) =>
+    apiRequest<Entry>(`/api/trackers/${trackerId}/entries`, {
+      method: 'POST',
+      body: JSON.stringify({ timestamp, note }),
+    }),
+  deleteEntry: (id: string) =>
+    apiRequest<any>(`/api/entries/${id}`, { method: 'DELETE' }),
 };
+
+// Types
+export interface Tracker {
+  id: string;
+  user_id: string;
+  name: string;
+  type: 'habit' | 'quit';
+  emoji: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Entry {
+  id: string;
+  tracker_id: string;
+  user_id: string;
+  timestamp: string;
+  note: string | null;
+  created_at: string;
+}
